@@ -53,23 +53,35 @@ end
 # returns a character value based on the piecetype and color. Should be lowercase if black.
 function to_string(piece::Piece)::String
     piece_string::String = ""
-    if piece.type == Pawn
-        piece_string = "P"
-    elseif piece.type == Knight
-        piece_string = "N"
-    elseif piece.type == Bishop
-        piece_string = "B"
-    elseif piece.type == Rook
-        piece_string = "R"
-    elseif piece.type == Queen
-        piece_string = "Q"
-    elseif piece.type == King
-        piece_string = "K"
-    end
-
     if piece.color == Black
-        return lowercase(piece_string)
+        if piece.type == Pawn
+            piece_string = "♙"
+        elseif piece.type == Knight
+            piece_string = "♘"
+        elseif piece.type == Bishop
+            piece_string = "♗"
+        elseif piece.type == Rook
+            piece_string = "♖"
+        elseif piece.type == Queen
+            piece_string = "♕"
+        elseif piece.type == King
+            piece_string = "♔"
+        end
+        return piece_string
     else 
+        if piece.type == Pawn
+            piece_string = "♟︎"
+        elseif piece.type == Knight
+            piece_string = "♞"
+        elseif piece.type == Bishop
+            piece_string = "♝"
+        elseif piece.type == Rook
+            piece_string = "♜"
+        elseif piece.type == Queen
+            piece_string = "♛"
+        elseif piece.type == King
+            piece_string = "♚"
+        end
         return piece_string
     end
 end
