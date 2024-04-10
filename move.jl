@@ -39,8 +39,24 @@ function make_move!(game::Game, move::Move)::Union{Piece, Nothing}
     return captured_piece
 end
 
+function un_make_move(game::Game, move::Move, captured_piece::Union{Piece, Nothing})
+    # "pick up" the moving piece at the END location
+    moving_piece::Piece = game.board[move.end_location[1], move.end_location[2]]
+
+    # put the captured piece at the END location
+    game.board[move.end_location[1], move.end_location[2]] = captured_piece
+
+    # "put down" the moving piece at the START location
+    game.board[move.start_location[1], move.start_location[2]] = moving_piece
+
+    # change back the player to move 
+    game.player_to_move = opponent(game.player_to_move)    
+end
+
 # checks if a move is allowed given the present game state.
 function is_valid_move(game::Game, move::Move)::Bool
+    if isnothing(move) return false end
+    
     # bounds check
     if !all(map(x -> x[1] in 1:8 && x[2] in 1:8, [move.start_location, move.end_location])) return false end
 
@@ -52,9 +68,6 @@ function is_valid_move(game::Game, move::Move)::Bool
 
     return true
 end
-
-# utility 
-is_valid_move(::Game, ::Nothing) = false
 
 # parses a Move from a String, returns nothing if fails
 function move_from_string(s::String)::Union{Move, Nothing}
