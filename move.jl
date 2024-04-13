@@ -196,11 +196,84 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
     return legal_moves
 end
 
-# returns all legal moves for a given player and board, by concatenating all legal moves
+# returns all legal moves for all of a given player's pieces and a given board, by concatenating all legal moves
 function get_all_legal_moves(game::Game)
-    return []
-    #add to the array the diagonals for pawns to attack
+    legal_moves = []
+    
+    # Iterate board
+    for row in 1:8
+        for col in 1:8
+            piece = game.board[row, col]
+            
+            # Check if there is a piece on the current square
+            if isa(piece, Piece) && piece.color == game.player_to_move
+                # Get legal moves for the current piece
+                piece_moves = get_piece_legal_moves(piece, (col, row))
+                # Filter out illegal moves
+                for move in piece_moves
+                    dest_col, dest_row = move
+                    dest_piece = game.board[dest_row, dest_col]
+                    
+                    # Check if destination square is empty or occupied by opponent's piece
+                    if isa(dest_piece, Nothing) || dest_piece.color != game.player_to_move
+                        if is_path_clear(game.board, (col, row), move)
+                            # Append legal move to the list
+                            push!(legal_moves, (piece, move))
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    return legal_moves
 end
+
+function is_path_clear(board, start, dest)
+    col_diff = dest[1] - start[1]
+    row_diff = dest[2] - start[2]
+    
+    # Check if moving diagonally
+    if col_diff != 0 && row_diff != 0 && abs(col_diff) == abs(row_diff)
+        col_dir = sign(col_diff)
+        row_dir = sign(row_diff)
+        col = start[1] + col_dir
+        row = start[2] + row_dir
+        while (col, row) != dest
+            if !isa(board[row, col], Nothing)
+                return false
+            end
+            col += col_dir
+            row += row_dir
+        end
+    # Check if moving horizontally or vertically
+    elseif col_diff != 0 || row_diff != 0
+        if col_diff != 0
+            col_dir = sign(col_diff)
+            col = start[1] + col_dir
+            row = start[2]
+            while col != dest[1]
+                if !isa(board[row, col], Nothing)
+                    return false
+                end
+                col += col_dir
+            end
+        else  # row_diff != 0
+            row_dir = sign(row_diff)
+            col = start[1]
+            row = start[2] + row_dir
+            while row != dest[2]
+                if !isa(board[row, col], Nothing)
+                    return false
+                end
+                row += row_dir
+            end
+        end
+    end
+    
+    return true
+end
+
 
 
 # ------------------------------------------------------------------------------------------------------------------
