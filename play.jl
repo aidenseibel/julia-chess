@@ -27,4 +27,25 @@ function two_player(game::Game)
     println(string(winner(game)) * " is the winner!")
 end
 
-two_player(initial_game())
+
+#TESTING
+white_pawn = Piece(White, Pawn)
+location = (2, 2)
+println(get_piece_legal_moves(white_pawn, location))  # Should print [(2, 3), (2, 4)] for a white pawn on its starting row
+black_pawn = Piece(Black, Pawn)
+location = (1, 7)
+println(get_piece_legal_moves(black_pawn, location))  # Should print [(1, 6), (1, 5)] for a black pawn on its starting row
+
+rook = Piece(White, Rook)
+location = (4, 7)
+println(get_piece_legal_moves(rook, location)) 
+
+knight = Piece(Black, Knight)
+location = (6, 3)
+println(get_piece_legal_moves(knight, location)) 
+
+
+
+
+
+#two_player(initial_game())

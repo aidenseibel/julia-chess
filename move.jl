@@ -84,15 +84,68 @@ function move_from_string(s::String)::Union{Move, Nothing}
     end
 end
 
+function is_valid_square(row, col)
+    return 1 <= row <= 8 && 1 <= col <= 8
+end
+
+
 # returns all legal moves for a given piece. Note that since pieces 
 # don't know their own location, it must be specified as an argument.
 function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
-    return []
+    legal_moves = []
+    if piece.type == Pawn
+        col, row = location #is this right?? or should it be backwards?
+        direction = (piece.color == White) ? 1 : -1
+        if is_valid_square(col, row + direction)
+            #moveCol = Int(col) - 96
+            push!(legal_moves, (col, row + direction))
+        end
+        setup_row = (piece.color == White) ? 2 : 7
+        direction = (piece.color == White) ? 2 : -2
+        if(setup_row == row)
+            #moveCol = Int(start_column) - 96
+            push!(legal_moves, (col, row + direction))
+        end
+        # Add code for pawn capturing diagonally
+        # No need to check if the destination square is within the board boundaries or occupied by other pieces
+    end
+
+    if piece.type == Rook
+        col, row = location
+        for d_row in [-1, 1]  # Iterate over rows above and below the rook
+            r = row + d_row
+            while is_valid_square(col, r)
+                push!(legal_moves, (col, r))
+                r += d_row
+            end
+        end
+        for d_col in [-1, 1]  # Iterate over columns to the left and right of the rook
+            c = col + d_col
+            while is_valid_square(c, row)
+                push!(legal_moves, (c, row))
+                c += d_col
+            end
+        end
+    end
+
+    if piece.type == Knight
+        col, row = location
+        for dc in [-2, -1, 1, 2]
+            for dr in [-2, -1, 1, 2]
+                if abs(dc) != abs(dr) && is_valid_square(col + dc, row + dr)
+                    push!(legal_moves, (col + dc, row + dr))
+                end
+            end
+        end
+    end
+
+    return legal_moves
 end
 
 # returns all legal moves for a given player and board, by concatenating all legal moves
 function get_all_legal_moves(game::Game)
     return []
+    #add to the array the diagonals for pawns to attack
 end
 
 
