@@ -43,8 +43,13 @@ println(get_piece_legal_moves(rook, location))
 knight = Piece(Black, Knight)
 location = (6, 3)
 println(get_piece_legal_moves(knight, location)) 
+bishop = Piece(Black, Bishop)
+location = (4, 4)
+println(get_piece_legal_moves(bishop, location)) 
 
-
+q = Piece(Black, Queen)
+location = (4, 4)
+println(get_piece_legal_moves(q, location)) 
 
 
 

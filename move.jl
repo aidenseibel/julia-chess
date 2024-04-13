@@ -139,6 +139,60 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
         end
     end
 
+    if piece.type == Bishop
+        col, row = location
+        for d_row in [-1, 1]  # Iterate over diagonals above and below the bishop
+            for d_col in [-1, 1]
+                r, c = row + d_row, col + d_col
+                while is_valid_square(c, r)
+                    push!(legal_moves, (c, r))
+                    r += d_row
+                    c += d_col
+                end
+            end
+        end
+    end
+
+    if piece.type == Queen
+        # The queen moves like a combination of a rook and a bishop
+        col, row = location
+        for d_row in [-1, 1]  # Iterate over rows above and below the queen
+            r = row + d_row
+            while is_valid_square(col, r)
+                push!(legal_moves, (col, r))
+                r += d_row
+            end
+        end
+        for d_col in [-1, 1]  # Iterate over columns to the left and right of the queen
+            c = col + d_col
+            while is_valid_square(c, row)
+                push!(legal_moves, (c, row))
+                c += d_col
+            end
+        end
+        for d_row in [-1, 1]  # Iterate over diagonals above and below the queen
+            for d_col in [-1, 1]
+                r, c = row + d_row, col + d_col
+                while is_valid_square(c, r)
+                    push!(legal_moves, (c, r))
+                    r += d_row
+                    c += d_col
+                end
+            end
+        end
+    end
+
+    if piece.type == King
+        col, row = location
+        for d_row in [-1, 0, 1]
+            for d_col in [-1, 0, 1]
+                if (d_row != 0 || d_col != 0) && is_valid_square(col + d_col, row + d_row)
+                    push!(legal_moves, (col + d_col, row + d_row))
+                end
+            end
+        end
+    end
+
     return legal_moves
 end
 
