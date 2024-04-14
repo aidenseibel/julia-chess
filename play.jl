@@ -20,6 +20,7 @@ function two_player(game::Game)
 
         # make the move
         make_move!(game, move)
+        
     end
 
     # print final board and winner
@@ -51,8 +52,8 @@ q = Piece(Black, Queen)
 location = (4, 4)
 println(get_piece_legal_moves(q, location)) 
 
-println(get_all_legal_moves(initial_game()))
-println(length(get_all_legal_moves(initial_game())))
+#println(get_all_legal_moves(initial_game()))
+#println(length(get_all_legal_moves(initial_game())))
 
 
-#two_player(initial_game())
+two_player(initial_game())

@@ -209,6 +209,7 @@ function get_all_legal_moves(game::Game)
             if isa(piece, Piece) && piece.color == game.player_to_move
                 # Get legal moves for the current piece
                 piece_moves = get_piece_legal_moves(piece, (col, row))
+                
                 # Filter out illegal moves
                 for move in piece_moves
                     dest_col, dest_row = move
@@ -216,9 +217,21 @@ function get_all_legal_moves(game::Game)
                     
                     # Check if destination square is empty or occupied by opponent's piece
                     if isa(dest_piece, Nothing) || dest_piece.color != game.player_to_move
-                        if is_path_clear(game.board, (col, row), move)
-                            # Append legal move to the list
-                            push!(legal_moves, (piece, move))
+                        if piece.type == Pawn
+                            if abs(dest_row - row) == 1 && abs(dest_col - col) == 1 # Check for diagonal attacks for pawns
+                                if isa(dest_piece, Piece) && dest_piece.color != game.player_to_move
+                                    push!(legal_moves, (piece, move))
+                                end
+                            else  # regular pawn movement
+                                if is_path_clear(game.board, (col, row), move)
+                                    push!(legal_moves, (piece, move))
+                                end
+                            end
+                        else
+                            # For other pieces, check if the path is clear
+                            if is_path_clear(game.board, (col, row), move)
+                                push!(legal_moves, (piece, move))
+                            end
                         end
                     end
                 end
@@ -228,6 +241,7 @@ function get_all_legal_moves(game::Game)
     
     return legal_moves
 end
+
 
 function is_path_clear(board, start, dest)
     col_diff = dest[1] - start[1]
