@@ -84,16 +84,210 @@ function move_from_string(s::String)::Union{Move, Nothing}
     end
 end
 
+function is_valid_square(row, col)
+    return 1 <= row <= 8 && 1 <= col <= 8
+end
+
+
 # returns all legal moves for a given piece. Note that since pieces 
 # don't know their own location, it must be specified as an argument.
 function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
-    return []
+    legal_moves = []
+    if piece.type == Pawn
+        col, row = location #is this right?? or should it be backwards?
+        direction = (piece.color == White) ? 1 : -1
+        if is_valid_square(col, row + direction)
+            #moveCol = Int(col) - 96
+            push!(legal_moves, (col, row + direction))
+        end
+        setup_row = (piece.color == White) ? 2 : 7
+        direction = (piece.color == White) ? 2 : -2
+        if(setup_row == row)
+            #moveCol = Int(start_column) - 96
+            push!(legal_moves, (col, row + direction))
+        end
+        # Add code for pawn capturing diagonally
+        # No need to check if the destination square is within the board boundaries or occupied by other pieces
+    end
+
+    if piece.type == Rook
+        col, row = location
+        for d_row in [-1, 1]  # Iterate over rows above and below the rook
+            r = row + d_row
+            while is_valid_square(col, r)
+                push!(legal_moves, (col, r))
+                r += d_row
+            end
+        end
+        for d_col in [-1, 1]  # Iterate over columns to the left and right of the rook
+            c = col + d_col
+            while is_valid_square(c, row)
+                push!(legal_moves, (c, row))
+                c += d_col
+            end
+        end
+    end
+
+    if piece.type == Knight
+        col, row = location
+        for dc in [-2, -1, 1, 2]
+            for dr in [-2, -1, 1, 2]
+                if abs(dc) != abs(dr) && is_valid_square(col + dc, row + dr)
+                    push!(legal_moves, (col + dc, row + dr))
+                end
+            end
+        end
+    end
+
+    if piece.type == Bishop
+        col, row = location
+        for d_row in [-1, 1]  # Iterate over diagonals above and below the bishop
+            for d_col in [-1, 1]
+                r, c = row + d_row, col + d_col
+                while is_valid_square(c, r)
+                    push!(legal_moves, (c, r))
+                    r += d_row
+                    c += d_col
+                end
+            end
+        end
+    end
+
+    if piece.type == Queen
+        # The queen moves like a combination of a rook and a bishop
+        col, row = location
+        for d_row in [-1, 1]  # Iterate over rows above and below the queen
+            r = row + d_row
+            while is_valid_square(col, r)
+                push!(legal_moves, (col, r))
+                r += d_row
+            end
+        end
+        for d_col in [-1, 1]  # Iterate over columns to the left and right of the queen
+            c = col + d_col
+            while is_valid_square(c, row)
+                push!(legal_moves, (c, row))
+                c += d_col
+            end
+        end
+        for d_row in [-1, 1]  # Iterate over diagonals above and below the queen
+            for d_col in [-1, 1]
+                r, c = row + d_row, col + d_col
+                while is_valid_square(c, r)
+                    push!(legal_moves, (c, r))
+                    r += d_row
+                    c += d_col
+                end
+            end
+        end
+    end
+
+    if piece.type == King
+        col, row = location
+        for d_row in [-1, 0, 1]
+            for d_col in [-1, 0, 1]
+                if (d_row != 0 || d_col != 0) && is_valid_square(col + d_col, row + d_row)
+                    push!(legal_moves, (col + d_col, row + d_row))
+                end
+            end
+        end
+    end
+
+    return legal_moves
 end
 
-# returns all legal moves for a given player and board, by concatenating all legal moves
+# returns all legal moves for all of a given player's pieces and a given board, by concatenating all legal moves
 function get_all_legal_moves(game::Game)
-    return []
+    legal_moves = []
+    
+    # Iterate board
+    for row in 1:8
+        for col in 1:8
+            piece = game.board[row, col]
+            
+            # Check if there is a piece on the current square
+            if isa(piece, Piece) && piece.color == game.player_to_move
+                # Get legal moves for the current piece
+                piece_moves = get_piece_legal_moves(piece, (col, row))
+                
+                # Filter out illegal moves
+                for move in piece_moves
+                    dest_col, dest_row = move
+                    dest_piece = game.board[dest_row, dest_col]
+                    
+                    # Check if destination square is empty or occupied by opponent's piece
+                    if isa(dest_piece, Nothing) || dest_piece.color != game.player_to_move
+                        if piece.type == Pawn
+                            if abs(dest_row - row) == 1 && abs(dest_col - col) == 1 # Check for diagonal attacks for pawns
+                                if isa(dest_piece, Piece) && dest_piece.color != game.player_to_move
+                                    push!(legal_moves, (piece, move))
+                                end
+                            else  # regular pawn movement
+                                if is_path_clear(game.board, (col, row), move)
+                                    push!(legal_moves, (piece, move))
+                                end
+                            end
+                        else
+                            # For other pieces, check if the path is clear
+                            if is_path_clear(game.board, (col, row), move)
+                                push!(legal_moves, (piece, move))
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    return legal_moves
 end
+
+
+function is_path_clear(board, start, dest)
+    col_diff = dest[1] - start[1]
+    row_diff = dest[2] - start[2]
+    
+    # Check if moving diagonally
+    if col_diff != 0 && row_diff != 0 && abs(col_diff) == abs(row_diff)
+        col_dir = sign(col_diff)
+        row_dir = sign(row_diff)
+        col = start[1] + col_dir
+        row = start[2] + row_dir
+        while (col, row) != dest
+            if !isa(board[row, col], Nothing)
+                return false
+            end
+            col += col_dir
+            row += row_dir
+        end
+    # Check if moving horizontally or vertically
+    elseif col_diff != 0 || row_diff != 0
+        if col_diff != 0
+            col_dir = sign(col_diff)
+            col = start[1] + col_dir
+            row = start[2]
+            while col != dest[1]
+                if !isa(board[row, col], Nothing)
+                    return false
+                end
+                col += col_dir
+            end
+        else  # row_diff != 0
+            row_dir = sign(row_diff)
+            col = start[1]
+            row = start[2] + row_dir
+            while row != dest[2]
+                if !isa(board[row, col], Nothing)
+                    return false
+                end
+                row += row_dir
+            end
+        end
+    end
+    
+    return true
+end
+
 
 
 # ------------------------------------------------------------------------------------------------------------------
