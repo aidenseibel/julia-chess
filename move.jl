@@ -80,21 +80,6 @@ function is_valid_move(game::Game, move::Move)::Bool
     end
 end
 
-# parses a Move from a String, returns nothing if fails
-#=function move_from_string(s::String)::Union{Move, Nothing}
-    if length(s) != 4 return nothing end    # quick validity check
-    
-    
-    start_column, start_row, end_column, end_row = s    # lil pattern matching
-    print(s)
-    # parse, if fail return nothing
-    try
-        return Move((parse(Int, start_column), Int(start_row) - 96), (parse(Int, end_column), Int(end_row) - 96))
-    catch
-        println("Failed to parse move from string!")
-        return nothing
-    end
-end=#
 function move_from_string(s::String)::Union{Move, Nothing}
     if length(s) != 4
         return nothing  # quick validity check
@@ -131,6 +116,17 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
     if piece.type == Pawn
         col, row = location #is this right?? or should it be backwards?
         direction = (piece.color == White) ? 1 : -1
+
+        for d_col in [-1, 1]
+            dest_col = col + d_col
+            dest_row = row + direction
+            if is_valid_square(dest_row, dest_col)
+                #dest_piece = game.board[dest_row, dest_col]
+                #if isa(dest_piece, Piece) && dest_piece.color != piece.color
+                push!(legal_move_objects, Move(location, (dest_col, dest_row)))
+            end
+        end
+
         if is_valid_square(col, row + direction)
             #moveCol = Int(col) - 96
             push!(legal_moves, (col, row + direction))
@@ -143,7 +139,8 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
             push!(legal_moves, (col, row + direction))
             push!(legal_move_objects, (Move(location, (col, row + direction))))
         end
-        # Add code for pawn capturing diagonally
+        # code for pawn capturing diagonally
+
         # No need to check if the destination square is within the board boundaries or occupied by other pieces
     end
 
@@ -268,10 +265,11 @@ function get_all_legal_moves(game::Game)
                             if abs(dest_row - row) == 1 && abs(dest_col - col) == 1 # Check for diagonal attacks for pawns
                                 if isa(dest_piece, Piece) && dest_piece.color != game.player_to_move
                                     #push!(legal_moves, (piece, move))
+                                    print("the pawn can make a kill")
                                     push!(legal_moves, (move))
                                 end
                             else  # regular pawn movement
-                                if is_path_clear(game.board, (col, row), move.end_location)
+                                if is_path_clear(game.board, (col, row), move.end_location) && isa(dest_piece, Nothing)
                                     push!(legal_moves, (move))
                                 end
                             end
