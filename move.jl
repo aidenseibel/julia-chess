@@ -25,13 +25,13 @@ function make_move!(game::Game, move::Move)::Union{Piece, Nothing}
     captured_piece::Union{Piece, Nothing} = game.board[move.end_location[1], move.end_location[2]]
 
     # pick up the moving piece at the start location
-    moving_piece::Piece = game.board[move.start_location[1], move.start_location[2]]
+    moving_piece::Piece = game.board[move.start_location[2], move.start_location[1]]
 
     # put down the moving piece at the end location
-    game.board[move.end_location[1], move.end_location[2]] = moving_piece
+    game.board[move.end_location[2], move.end_location[1]] = moving_piece
 
     # remove the moving piece from its original location
-    game.board[move.start_location[1], move.start_location[2]] = nothing
+    game.board[move.start_location[2], move.start_location[1]] = nothing
 
     # change the player to move 
     game.player_to_move = opponent(game.player_to_move)
@@ -61,28 +61,62 @@ function is_valid_move(game::Game, move::Move)::Bool
     if !all(map(x -> x[1] in 1:8 && x[2] in 1:8, [move.start_location, move.end_location])) return false end
 
     # check if there is a piece at the starting location
-    if isa(game.board[move.start_location[1], move.start_location[2]], Nothing) return false end
+    if isa(game.board[move.start_location[2], move.start_location[1]], Nothing) return false end
 
     # # check if there is nothing / a "captureable" piece at the end location (not our own)
     # if isa(game.board[move.end_location[1], move.end_location[2]], Nothing) return false end
-
-    return true
+    legals = get_all_legal_moves(game)
+    #=print("\n\n Current possible moves: \n")
+    print(legals)
+    print("\nCurrent move:\n")
+    print(move)
+    print("\n\n")=#
+    if move in legals
+        # The move is in the list of legal moves
+        return true
+    else
+        # The move is not in the list of legal moves
+        return false
+    end
 end
 
 # parses a Move from a String, returns nothing if fails
-function move_from_string(s::String)::Union{Move, Nothing}
+#=function move_from_string(s::String)::Union{Move, Nothing}
     if length(s) != 4 return nothing end    # quick validity check
     
-    start_column, start_row, end_column, end_row = s    # lil pattern matching
     
+    start_column, start_row, end_column, end_row = s    # lil pattern matching
+    print(s)
     # parse, if fail return nothing
     try
-        return Move((parse(Int, start_row), Int(start_column) - 96), (parse(Int, end_row), Int(end_column) - 96))
+        return Move((parse(Int, start_column), Int(start_row) - 96), (parse(Int, end_column), Int(end_row) - 96))
+    catch
+        println("Failed to parse move from string!")
+        return nothing
+    end
+end=#
+function move_from_string(s::String)::Union{Move, Nothing}
+    if length(s) != 4
+        return nothing  # quick validity check
+    end
+    
+    # Extract individual characters from the string
+    start_column = s[1]
+    start_row = s[2]
+    end_column = s[3]
+    end_row = s[4]
+    
+    # Convert characters to integers
+    try
+        printMove = Move((Int(start_column) - 96, parse(Int, start_row)), (Int(end_column) - 96, parse(Int, end_row)))
+        #print(printMove)
+        return printMove
     catch
         println("Failed to parse move from string!")
         return nothing
     end
 end
+
 
 function is_valid_square(row, col)
     return 1 <= row <= 8 && 1 <= col <= 8
