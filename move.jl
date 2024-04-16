@@ -17,21 +17,21 @@ end
 
 # given a game and a move, make the move. Note this mutates the game directly.
 function make_move!(game::Game, move::Move)::Union{Piece, Nothing}
-    if !is_valid_move(game, move)
-        error("Move is not valid! Move: " * to_string(move) * "Game: \n" * to_string(game))
-    end
+    # if !is_valid_move(game, move)
+    #     error("Move is not valid! Move: " * to_string(move) * "Game: \n" * to_string(game))
+    # end
 
     # remember the captured piece, if there is one
-    captured_piece::Union{Piece, Nothing} = game.board[move.end_location[1], move.end_location[2]]
+    captured_piece::Union{Piece, Nothing} = game.board[move.end_location[2], move.end_location[1]]
 
     # pick up the moving piece at the start location
-    moving_piece::Piece = game.board[move.start_location[1], move.start_location[2]]
+    moving_piece::Piece = game.board[move.start_location[2], move.start_location[1]]
 
     # put down the moving piece at the end location
-    game.board[move.end_location[1], move.end_location[2]] = moving_piece
+    game.board[move.end_location[2], move.end_location[1]] = moving_piece
 
     # remove the moving piece from its original location
-    game.board[move.start_location[1], move.start_location[2]] = nothing
+    game.board[move.start_location[2], move.start_location[1]] = nothing
 
     # change the player to move 
     game.player_to_move = opponent(game.player_to_move)
@@ -39,15 +39,15 @@ function make_move!(game::Game, move::Move)::Union{Piece, Nothing}
     return captured_piece
 end
 
-function un_make_move(game::Game, move::Move, captured_piece::Union{Piece, Nothing})
+function un_make_move!(game::Game, move::Move, captured_piece::Union{Piece, Nothing})
     # "pick up" the moving piece at the END location
-    moving_piece::Piece = game.board[move.end_location[1], move.end_location[2]]
+    moving_piece::Piece = game.board[move.end_location[2], move.end_location[1]]
 
     # put the captured piece at the END location
-    game.board[move.end_location[1], move.end_location[2]] = captured_piece
+    game.board[move.end_location[2], move.end_location[1]] = captured_piece
 
     # "put down" the moving piece at the START location
-    game.board[move.start_location[1], move.start_location[2]] = moving_piece
+    game.board[move.start_location[2], move.start_location[1]] = moving_piece
 
     # change back the player to move 
     game.player_to_move = opponent(game.player_to_move)    
