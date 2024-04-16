@@ -91,20 +91,23 @@ end
 
 # returns all legal moves for a given piece. Note that since pieces 
 # don't know their own location, it must be specified as an argument.
-function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
+function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int}) 
     legal_moves = []
+    legal_move_objects = []
     if piece.type == Pawn
         col, row = location #is this right?? or should it be backwards?
         direction = (piece.color == White) ? 1 : -1
         if is_valid_square(col, row + direction)
             #moveCol = Int(col) - 96
             push!(legal_moves, (col, row + direction))
+            push!(legal_move_objects, (Move(location, (col, row + direction))))
         end
         setup_row = (piece.color == White) ? 2 : 7
         direction = (piece.color == White) ? 2 : -2
         if(setup_row == row)
             #moveCol = Int(start_column) - 96
             push!(legal_moves, (col, row + direction))
+            push!(legal_move_objects, (Move(location, (col, row + direction))))
         end
         # Add code for pawn capturing diagonally
         # No need to check if the destination square is within the board boundaries or occupied by other pieces
@@ -116,6 +119,7 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
             r = row + d_row
             while is_valid_square(col, r)
                 push!(legal_moves, (col, r))
+                push!(legal_move_objects, (Move(location, (col, r))))
                 r += d_row
             end
         end
@@ -123,6 +127,7 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
             c = col + d_col
             while is_valid_square(c, row)
                 push!(legal_moves, (c, row))
+                push!(legal_move_objects, (Move(location, (c, row))))
                 c += d_col
             end
         end
@@ -134,6 +139,8 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
             for dr in [-2, -1, 1, 2]
                 if abs(dc) != abs(dr) && is_valid_square(col + dc, row + dr)
                     push!(legal_moves, (col + dc, row + dr))
+                    push!(legal_move_objects, (Move(location, (col + dc, row + dr))))
+
                 end
             end
         end
@@ -146,6 +153,7 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
                 r, c = row + d_row, col + d_col
                 while is_valid_square(c, r)
                     push!(legal_moves, (c, r))
+                    push!(legal_move_objects, (Move(location, (c, r))))
                     r += d_row
                     c += d_col
                 end
@@ -160,6 +168,7 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
             r = row + d_row
             while is_valid_square(col, r)
                 push!(legal_moves, (col, r))
+                push!(legal_move_objects, (Move(location, (col, r))))
                 r += d_row
             end
         end
@@ -167,6 +176,7 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
             c = col + d_col
             while is_valid_square(c, row)
                 push!(legal_moves, (c, row))
+                push!(legal_move_objects, (Move(location, (c, row))))
                 c += d_col
             end
         end
@@ -175,6 +185,7 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
                 r, c = row + d_row, col + d_col
                 while is_valid_square(c, r)
                     push!(legal_moves, (c, r))
+                    push!(legal_move_objects, (Move(location, (c, r))))
                     r += d_row
                     c += d_col
                 end
@@ -188,12 +199,14 @@ function get_piece_legal_moves(piece::Piece, location::Tuple{Int, Int})
             for d_col in [-1, 0, 1]
                 if (d_row != 0 || d_col != 0) && is_valid_square(col + d_col, row + d_row)
                     push!(legal_moves, (col + d_col, row + d_row))
+                    push!(legal_move_objects, (Move(location, (col + d_col, row + d_row))))
                 end
             end
         end
     end
 
-    return legal_moves
+    #return legal_moves
+    return legal_move_objects
 end
 
 # returns all legal moves for all of a given player's pieces and a given board, by concatenating all legal moves
@@ -212,7 +225,7 @@ function get_all_legal_moves(game::Game)
                 
                 # Filter out illegal moves
                 for move in piece_moves
-                    dest_col, dest_row = move
+                    dest_col, dest_row = move.end_location #does this work?
                     dest_piece = game.board[dest_row, dest_col]
                     
                     # Check if destination square is empty or occupied by opponent's piece
@@ -220,17 +233,18 @@ function get_all_legal_moves(game::Game)
                         if piece.type == Pawn
                             if abs(dest_row - row) == 1 && abs(dest_col - col) == 1 # Check for diagonal attacks for pawns
                                 if isa(dest_piece, Piece) && dest_piece.color != game.player_to_move
-                                    push!(legal_moves, (piece, move))
+                                    #push!(legal_moves, (piece, move))
+                                    push!(legal_moves, (move))
                                 end
                             else  # regular pawn movement
-                                if is_path_clear(game.board, (col, row), move)
-                                    push!(legal_moves, (piece, move))
+                                if is_path_clear(game.board, (col, row), move.end_location)
+                                    push!(legal_moves, (move))
                                 end
                             end
                         else
                             # For other pieces, check if the path is clear
-                            if is_path_clear(game.board, (col, row), move)
-                                push!(legal_moves, (piece, move))
+                            if is_path_clear(game.board, (col, row), move.end_location)
+                                push!(legal_moves, (move))
                             end
                         end
                     end
