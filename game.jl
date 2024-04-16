@@ -54,8 +54,10 @@ function to_string(game::Game)::String
             end
             game_string *= " | " # formatting
         end
+        game_string *= string(row)
         game_string *= "\n---------------------------------\n" # formatting
     end
+    game_string *= "  a   b   c   d   e   f   g   h "
 
     return game_string
 end
