@@ -51,8 +51,9 @@ println(get_piece_legal_moves(bishop, location))
 q = Piece(Black, Queen)
 location = (4, 4)
 println(get_piece_legal_moves(q, location)) 
-
+println("\n\n")
 println(get_all_legal_moves(initial_game()))
+println("\n")
 println(length(get_all_legal_moves(initial_game())))
 
 
