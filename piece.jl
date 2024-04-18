@@ -1,3 +1,5 @@
+import Base.:(==)
+
 # an enumeration for piece/player colors.
 @enum Color begin
     Black
@@ -86,6 +88,41 @@ function to_string(piece::Piece)::String
     end
 end
 
+# from a FEN character, return the corresponding piece.
+function get_piece(char::Char)::Piece
+    if char == 'P'
+        return Piece(White, Pawn)
+    elseif char == 'B'
+        return Piece(White, Bishop)
+    elseif char == 'N'
+        return Piece(White, Knight)
+    elseif char == 'R'
+        return Piece(White, Rook)
+    elseif char == 'Q'
+        return Piece(White, Queen)
+    elseif char == 'K'
+        return Piece(White, King)
+    elseif char == 'p'
+        return Piece(Black, Pawn)
+    elseif char == 'b'
+        return Piece(Black, Bishop)
+    elseif char == 'n'
+        return Piece(Black, Knight)
+    elseif char == 'r'
+        return Piece(Black, Rook)
+    elseif char == 'q'
+        return Piece(Black, Queen)
+    elseif char == 'k'
+        return Piece(Black, King)
+    else
+        error("Invalid character for piece: $char")
+    end
+end
+
+# returns if two pieces are the same (White Pawn, Black Knight, etc.)
+function ==(piece1::Piece, piece2::Piece)
+    return piece1.color == piece2.color && piece1.type == piece2.type
+end
 
 # ------------------------------------------------------------------------------------------------------------------
 

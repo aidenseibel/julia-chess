@@ -1,4 +1,5 @@
 include("piece.jl")
+import Base.:(==)
 
 # a game must include a board as well as the player to move; 
 # some things are still necessary, such as castling rights and en passant rules, 
@@ -95,9 +96,56 @@ function initial_game()::Game
     return game
 end
 
+# read a string of FEN (Forsyth–Edwards Notation) and output a new game.
+# example FEN (initial game): rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+function game_from_fen(fen::String)::Game
+    fen_board, fen_player, _, _, _, _ = split(fen, " ") # we will ignore castling rights, en passant rules, etc for now
+
+    game_player = fen_player == "w" ? White : Black # read the player to move
+
+    game_board::Matrix{Union{Piece, Nothing}} = fill(nothing, 8, 8)
+    
+    # populate the game board
+    rows = split(fen_board, "/")
+    for row in 1:8
+        current_column::Int64 = 1
+        for character in rows[row]
+            # if there is a number, there is an n-square gap in the row
+            if character in ['1', '2', '3', '4', '5', '6', '7', '8']
+                current_column += parse(Int64, character)
+            
+            # otherwise, parse the piece and add it to the board
+            else
+                game_board[9-row, current_column] = get_piece(character)
+                current_column += 1
+            end
+        end
+    end
+
+    return Game(game_board, game_player)
+end
+
+# returns if two games have the same board and player to move, for testing purposes.
+function ==(game1::Game, game2::Game)::Bool
+    # check the player to move
+    if game1.player_to_move != game2.player_to_move return false end
+
+    # check the board
+    for row in 1:8
+        for column in 1:8
+            if game1.board[row, column] != game2.board[row, column] return false end
+        end
+    end
+
+    return true
+end
+
 
 # ------------------------------------------------------------------------------------------------------------------
 
 # # for testing purposes
 # a = initial_game()
 # println(to_string(a))
+
+# e4_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+# println(to_string(game_from_fen(e4)))

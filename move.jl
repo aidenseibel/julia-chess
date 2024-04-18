@@ -3,14 +3,14 @@ include("piece.jl")
 
 # we do not need any other information than this.
 struct Move 
-    start_location::Tuple{Int, Int} # (row 1-8, column A-H)
-    end_location::Tuple{Int, Int} # (row 1-8, column A-H)
+    start_location::Tuple{Int, Int} # (column A-H, row 1-8)
+    end_location::Tuple{Int, Int} # (column A-H, row 1-8)
 end
 
 # returns an easily readable string for a move in algebraic format, e.g. e2e4
 function to_string(move::Move)::String
-    start_location_string = string(Char(96 + move.start_location[2])) * string(move.start_location[1])
-    end_location_string = string(Char(96 + move.end_location[2])) * string(move.end_location[1])
+    start_location_string = string(Char(96 + move.start_location[1])) * string(move.start_location[2])
+    end_location_string = string(Char(96 + move.end_location[1])) * string(move.end_location[2])
 
     return start_location_string * end_location_string
 end
@@ -265,7 +265,7 @@ function get_all_legal_moves(game::Game)
                             if abs(dest_row - row) == 1 && abs(dest_col - col) == 1 # Check for diagonal attacks for pawns
                                 if isa(dest_piece, Piece) && dest_piece.color != game.player_to_move
                                     #push!(legal_moves, (piece, move))
-                                    print("the pawn can make a kill")
+                                    # print("the pawn can make a kill")
                                     push!(legal_moves, (move))
                                 end
                             else  # regular pawn movement

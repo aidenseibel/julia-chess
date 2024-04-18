@@ -3,12 +3,12 @@ include("move.jl")
 include("game.jl")
 
 # from a given game, return the best move and the board evaluation.
-function get_best_move(depth::Int64, game::Game)::Tuple{Move, Int64}
+function get_best_move(depth::Int64, game::Game)::Tuple{Union{Move, Nothing}, Int64}
     # base case, depth is 0 so we stop evaluating
-    if depth <= 0 return (Move((-1, -1), (-1, -1)), evaluate_material(game)) end
+    if depth <= 0 return (nothing, evaluate_material(game)) end
 
     # initialize a tuple with an empty move and the worst possible evaluation for the current player's color
-    best_move_and_evaluation::Tuple{Move, Int64} = (game.player_to_move == White ? (Move((-1, -1), (-1, -1)), 10000) : (Move((-1, -1), (-1, -1)), -10000))
+    best_move_and_evaluation::Tuple{Union{Move, Nothing}, Int64} = (game.player_to_move == White ? (nothing, -100000) : (nothing, 100000))
     
     # iterate through all the legal moves generated
     for move::Move in get_all_legal_moves(game)
@@ -16,13 +16,14 @@ function get_best_move(depth::Int64, game::Game)::Tuple{Move, Int64}
         captured_piece::Union{Piece, Nothing} = make_move!(game, move)  # we keep the captured piece to add back later 
 
         # recursive call returns the best move/rating from the next state
-        best_this_branch::Tuple{Move, Int64} = get_best_move(depth - 1, game)   # note depth - 1 will lead to base case eventually
+        best_this_branch::Tuple{Union{Move, Nothing}, Int64} = get_best_move(depth - 1, game)   # note depth - 1 will lead to base case eventually
 
         # if we find a move with a better rating than what we currently have, replace the current move.
         # "better rating" is more positive for white, more negative for black
-        if game.player_to_move == White && best_this_branch[2] > best_move_and_evaluation[2]
+        
+        if game.player_to_move == White && best_this_branch[2] < best_move_and_evaluation[2]
             best_move_and_evaluation = (move, best_this_branch[2])
-        elseif game.player_to_move == Black && best_this_branch[2] < best_move_and_evaluation[2]
+        elseif game.player_to_move == Black && best_this_branch[2] > best_move_and_evaluation[2]
             best_move_and_evaluation = (move, best_this_branch[2])
         end
         
