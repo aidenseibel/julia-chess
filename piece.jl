@@ -119,14 +119,30 @@ function get_piece(char::Char)::Piece
     end
 end
 
+# return a FEN character from the corresponding piece.
+function to_letter(piece::Piece)::String
+    if piece.type == Pawn
+        piece_string = "P"
+    elseif piece.type == Knight
+        piece_string = "N"
+    elseif piece.type == Bishop
+        piece_string = "B"
+    elseif piece.type == Rook
+        piece_string = "R"
+    elseif piece.type == Queen
+        piece_string = "Q"
+    elseif piece.type == King
+        piece_string = "K"
+    end
+
+    if piece.color == Black
+        return lowercase(piece_string)
+    else 
+        return piece_string
+    end
+end
+
 # returns if two pieces are the same (White Pawn, Black Knight, etc.)
 function ==(piece1::Piece, piece2::Piece)
     return piece1.color == piece2.color && piece1.type == piece2.type
 end
-
-# ------------------------------------------------------------------------------------------------------------------
-
-# # for testing purposes
-
-# println(to_string(Piece(Black, Pawn)))
-# println(value(Piece(Black, Pawn)))

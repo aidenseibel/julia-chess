@@ -31,6 +31,7 @@ end
 
 # allows a player to play the engine.
 function play_engine(game::Game)
+    current_turn = 1
     # while both players have their kings
     while isnothing(winner(game))
         println(to_string(game))    # print the current game
@@ -52,9 +53,20 @@ function play_engine(game::Game)
         sleep(1)
         println("Calculating engine move...")
         
-        engine_move::Move, engine_rating::Int64 = get_best_move(5, game)
+        # if it's the first move, consider playing an opening
+        engine_move::Union{Move, Nothing} = nothing
+        if current_turn == 1
+            engine_move = get_opening(game)
+        else
+            engine_move, engine_rating::Int64 = get_best_move(4, game, true)
+        end
+
+        # make the engine move
         make_move!(game, engine_move)
         println("Engine plays ", to_string(engine_move))
+        
+        # increase the current turn
+        current_turn += 1
     end
 
     # print final board and winner

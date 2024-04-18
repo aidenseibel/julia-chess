@@ -125,6 +125,32 @@ function game_from_fen(fen::String)::Game
     return Game(game_board, game_player)
 end
 
+# converts a game to a FEN string (excluding the last few bits, only the board and player).
+function game_to_fen(game::Game)::String
+    fen::String = ""
+
+    # boards
+    for row in 8:-1:1
+        column_offset::Int64 = 0
+        for column in 1:8
+            if isa(game.board[row, column], Piece)
+                if column_offset != 0 fen *= string(column_offset) end
+                fen *= to_letter(game.board[row, column])
+                column_offset = 0
+            else
+                column_offset += 1
+            end
+        end
+        if column_offset != 0 fen *= string(column_offset) end
+        if row != 1 fen *= "/" end
+    end
+
+    # player
+    fen *= " " * (game.player_to_move == White ? "w" : "b")
+    # fen *= " - - 0 1"
+    return fen
+end
+
 # returns if two games have the same board and player to move, for testing purposes.
 function ==(game1::Game, game2::Game)::Bool
     # check the player to move
@@ -139,13 +165,3 @@ function ==(game1::Game, game2::Game)::Bool
 
     return true
 end
-
-
-# ------------------------------------------------------------------------------------------------------------------
-
-# # for testing purposes
-# a = initial_game()
-# println(to_string(a))
-
-# e4_fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
-# println(to_string(game_from_fen(e4)))

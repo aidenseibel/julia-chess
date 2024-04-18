@@ -54,7 +54,7 @@ function un_make_move!(game::Game, move::Move, captured_piece::Union{Piece, Noth
 end
 
 # checks if a move is allowed given the present game state.
-function is_valid_move(game::Game, move::Move)::Bool
+function is_valid_move(game::Game, move::Union{Move, Nothing})::Bool
     if isnothing(move) return false end
     
     # bounds check
@@ -333,17 +333,3 @@ function is_path_clear(board, start, dest)
     
     return true
 end
-
-
-
-# ------------------------------------------------------------------------------------------------------------------
-
-# # for testing purposes
-# a = initial_game()
-
-# println(to_string(a.board[2, 5]))
-# e4 = Move((2, 5), (4, 5))
-# println(to_string(e4))
-# make_move!(a, e4)
-
-# println("\n\nAfter making move: \n" * to_string(a))
