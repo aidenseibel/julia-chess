@@ -52,7 +52,7 @@ function play_engine(game::Game)
         sleep(1)
         println("Calculating engine move...")
         
-        engine_move::Move, engine_rating::Int64 = get_best_move(5, game)
+        engine_move::Move, engine_rating::Int64 = get_best_move(4, game)
         make_move!(game, engine_move)
         println("Engine plays ", to_string(engine_move))
     end
